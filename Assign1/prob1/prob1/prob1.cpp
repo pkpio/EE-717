@@ -53,14 +53,22 @@ int sizeOfStack(int stack){
 void pop(int stack){
 	switch(stack){
 	case 1: 
-		s1Ptr--;
-		cout<<"Popped : "<<stackArray[s1Ptr]<<endl;
-		stackArray[s1Ptr] = 0;
+		if(s1Ptr != 0){
+			s1Ptr--;
+			cout<<"Popped : "<<stackArray[s1Ptr]<<endl;
+			stackArray[s1Ptr] = 0;
+		} else{
+			cout<<"No more values to POP"<<endl;
+		}
 		break;
 	case 2: 
-		s2Ptr++;
-		cout<<"Popped : "<<stackArray[s2Ptr]<<endl;
-		stackArray[s2Ptr] = 0;
+		if(s2Ptr != size-1){
+			s2Ptr++;
+			cout<<"Popped : "<<stackArray[s2Ptr]<<endl;
+			stackArray[s2Ptr] = 0;
+		} else{
+			cout<<"No more values to POP"<<endl;
+		}
 		break;
 	}
 
@@ -69,19 +77,25 @@ void pop(int stack){
 }
 
 void push(int stack, int value){
-	switch(stack){
-	case 1: 
-		stackArray[s1Ptr] = value;
-		s1Ptr++;
-		break;
-	case 2: 
-		stackArray[s2Ptr] = value;
-		s2Ptr--;
-		break;
-	}
+	if(s2Ptr-s1Ptr != -1){
+		switch(stack){
+		case 1: 
+			stackArray[s1Ptr] = value;
+			s1Ptr++;
+			break;
+		case 2: 
+			stackArray[s2Ptr] = value;
+			s2Ptr--;
+			break;
+		}
 
-	cout<<"New array is :"<<endl;
-	printArray();
+		cout<<"New array is :"<<endl;
+		printArray();
+	} else{
+		cout<<"Stack overflow !"<< endl;
+		cout<<"Current array is :"<<endl;
+		printArray();
+	}
 }
 
 int main(){
