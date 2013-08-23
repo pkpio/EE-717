@@ -3,7 +3,7 @@ using namespace std;
 
 #define size 20
 
-//One stalk fills array from left while other from right
+//One stack fills array from left while other from right
 int s1Ptr = 0;			//Stack 1 pointer
 int s2Ptr = size-1;		//Stack 2 pointer
 int stackArray [size];
