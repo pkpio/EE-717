@@ -1,228 +1,163 @@
 /*********************************************************
-Heap used for this problem is a min Heap
-Each node in the heap is a doubly linked.
-It has pointers to left, right childs and parent
+Heap used for this problem is a max Heap
+Heap implemented using a circular array
+
+Index starts from 1.
+For element i,
+parent_index = i/2
+lChild = i*2 	rChild = i*2 + 1
 **********************************************************/
 
 #include <iostream>
 #include <cmath>
 using namespace std;
 
-//Define a node which supports binary tree
-struct node{
-	int key;
-	node *parent;
-	node *lChild;
-	node *rChild;
-};
+#define size 50
 
-//Heap variables
-node *root = NULL;
-node *fLeaf = NULL; //Last leaf that is filled
+int heap[size];
+int ptr = 1;//Current location in the array to be filled with new values
+
+/************ Other functions ****************/
+void exchange(int i, int j){
+	int temp = heap[i];
+	heap[i] = heap[j];
+	heap[j] = temp;
+}
 
 
-/***********	Queue operations - used in level order traversal	********/
-//Assumed max # of root nodes as 50. Just to make Queue implementation easy
-#define width 50
-
-node *queue[width];
-int qPtr = 0;
-int qFrntPtr = 0;	//For implementing Queues using circular array
-
-void enqueue(node *val){
-	if(qPtr != width){
-		queue[qPtr] = val;
-		qPtr++;
-	} else{
-		cout<<"Queue is full !"<<endl;
+/**************	Heap operations ******************/
+void insertHeap(int val){
+	//Normal insertion at the end
+	if(ptr != size){
+		heap[ptr] = val;
+		ptr++;
 	}
-}
 
-node * dequeue(){
-	node *val;
-	if(qFrntPtr < qPtr){
-		val = queue[qFrntPtr];
-		queue[qFrntPtr] = 0;
-		qFrntPtr++;
-	} else{
-		cout<<"Queue is empty !"<<endl;
-		qFrntPtr = 0;
-		qPtr = 0;
-	}
-	return val;
-}
-
-bool qEmpty(){
-    bool output = false;
-	if(qPtr == qFrntPtr){
-		output = true;
-	} else{
-		output = false;
-    }
-    return output;
-}
-
-
-
-/**********************		Heap operations		*********************/
-void Insert(int key){
-	//Creating a new node hold this key
-	node *temp = new node;
-	temp->key = key;
-
-	//Just Insertion of root node as a left. Max checking will follow after this
-	if(root != NULL){
-		//Case 1: Leaf node has no childs
-		if(fLeaf->lChild == NULL){
-			fLeaf->lChild = temp;
-			temp->parent = fLeaf;
-			fLeaf = temp;
-		} 
-		//Case 2: Leaf node has no sibling
-		else if((fLeaf->parent)->rChild == NULL){
-			fLeaf->rChild = temp;
-			temp->parent = fLeaf;
-			fLeaf = temp;
+	//Checking for the right position
+	int chld = ptr-1;
+	int prnt = chld/2;
+	while(prnt != 0){
+		if(heap[chld]>heap[prnt]){
+			int temp = heap[prnt];
+			heap[prnt] = heap[chld];
+			heap[chld] = temp;
+			chld = prnt;
+			prnt = chld/2;
+		}else{
+			break;
 		}
-		//Not possible case
-		else{
-			cout<<"Error ! Reached an impossible state. Please recheck the code !"<<endl;
-		}
-	}else{
-		root = temp;
-		fLeaf = temp;
 	}
-
-	//Checking for proper position for the new leaf
-	//Condition is no parent's key should be smaller than child
-	temp = fLeaf;
-
-	while(temp->key > (temp->parent)->key){
-		node *temp2 = temp->parent;
-
-		temp->parent = temp2->parent;
-
-		//Case 1: Newly inserted node is inserted as a right node to its parent
-		if(temp2->rChild != NULL){
-			temp->lChild = temp2->lChild;
-			temp->rChild = temp2;		} 
-		//Newly inserted node is inserted as a left child
-		else{
-			temp->lChild = temp2;
-		}
-		temp2->parent = temp;
-		temp2->lChild = NULL;
-		temp2->rChild = NULL;
-	}
-
-	////////////	NEEDED CONDITION FOR TEMP REACHING ROOT ????
-
 }
+
 
 void printHeap(){
-	node *temp = root;
-	cout<<"The current heap is: "<<endl;
-	cout<<temp->key<<endl;
-	enqueue(temp->lChild);
-	enqueue(temp->rChild);
+	cout<<"Level order traversal of current heap is: "<<endl;
 
-	int i = 1; //to insert a line break
 	int j = 1;
-	while(qPtr != qFrntPtr){
-		temp = dequeue();
-		cout<<temp->key<<" ";
-
-		if(temp->lChild != NULL){
-			enqueue(temp->lChild);
-		}
-		if(temp->rChild != NULL){
-			enqueue(temp->rChild);
-		}
-
-		//Below lines are just to ensure a line break after a level
-		i++;
-		if((i+1)%((int)pow(2.0, j)) == 0){
+	for(int i=1; i<ptr; i++){
+		cout<<heap[i]<<" ";
+		int k = (int) pow(2.0,j);
+		if((i+1)%k == 0){
 			cout<<endl;
 			j++;
 		}
 	}
- }
+	cout<<endl<<endl;
+}
 
 
- /******************************** Main program ********************************/
+void delHeap(){
+	int prnt = 1;
+	int lChild = prnt*2;
+	int rChild = prnt*2+1;
+
+	//Replace root with bottom most element
+	heap[1] = heap[ptr-1];
+	ptr--;
+
+	while(lChild < ptr){
+		//Case 1: Right child exists
+		if(rChild < ptr){
+			//Case 1: lChild < rChild
+			if(heap[lChild] < heap[rChild]){
+				//Case 1: p < l < r 
+				if(heap[prnt] < heap[lChild]){
+					exchange(prnt, rChild);
+					prnt = rChild;
+					lChild = prnt*2;
+					rChild = prnt*2 +1;
+				} 
+				//Case 2: l < p < r
+				else if(heap[prnt] < heap[rChild]){
+					exchange(prnt, rChild);
+					prnt = rChild;
+					lChild = prnt*2;
+					rChild = prnt*2 +1;
+				}
+				//case 3: l < r < p
+				else{
+					//Get out of loop
+					break;
+				}
+			}
+			//Case 2: lChild > rChild
+			else{
+				//Case 1: p < r < l 
+				if(heap[prnt] < heap[rChild]){
+					exchange(prnt, lChild);
+					prnt = lChild;
+					lChild = prnt*2;
+					rChild = prnt*2 +1;
+				} 
+				//Case 2: r < p < l
+				else if(heap[prnt] < heap[lChild]){
+					exchange(prnt, lChild);
+					prnt = lChild;
+					lChild = prnt*2;
+					rChild = prnt*2 +1;
+				}
+				//case 3: r < l < p
+				else{
+					//Get out of loop
+					break;
+				}
+			}
+
+		}
+		//rChild doesn't exit
+		else{
+			//lChild > prnt
+			if(heap[lChild] > heap[prnt]){
+				exchange(lChild, prnt);
+			}
+			//lChild < prnt
+			else{
+				//Get out of loop
+				break;
+			}
+		}
+	}
+}
+
+
 
 int main(){
-    
-    // Test nodes...........
-	node *temp = new node;
-	temp->key = 10;
-	temp->lChild = NULL;
-	temp->rChild = NULL;
-
-	node *temp1 = new node;
-	temp1->key = 9;
-	temp1->lChild = NULL;
-	temp1->rChild = NULL;
-
-	node *temp2 = new node;
-	temp2->key = 8;
-	temp2->lChild = NULL;
-	temp2->rChild = NULL;
-
-	node *temp3 = new node;
-	temp3->key = 7;
-	temp3->lChild = NULL;
-	temp3->rChild = NULL;
-
-	node *temp4 = new node;
-	temp4->key = 6;
-	temp4->lChild = NULL;
-	temp4->rChild = NULL;
-
-	node *temp5 = new node;
-	temp5->key = 5;
-	temp5->lChild = NULL;
-	temp5->rChild = NULL;
-
-	node *temp6 = new node;
-	temp6->key = 4;
-	temp6->lChild = NULL;
-	temp6->rChild = NULL;
-
-	node *temp7 = new node;
-	temp7->key = 14;
-	temp7->lChild = NULL;
-	temp7->rChild = NULL;
-
-	node *temp8 = new node;
-	temp8->key = 15;
-	temp8->lChild = NULL;
-	temp8->rChild = NULL;
-
-	node *temp9 = new node;
-	temp9->key = 16;
-	temp9->lChild = NULL;
-	temp9->rChild = NULL;
-
-	node *temp10 = new node;
-	temp10->key = 17;
-	temp10->lChild = NULL;
-	temp10->rChild = NULL;
-
-	root = temp;
-	root->lChild = temp1;
-	root->rChild = temp2;
-	temp1->lChild = temp3;
-	temp1->rChild = temp4;
-	temp2->lChild = temp5;
-	temp2->rChild = temp6;
-	temp3->lChild = temp7;
-	temp3->rChild = temp8;
-	temp4->lChild = temp9;
-	temp4->rChild = temp10;
-
+	//Initialization with given values
+	for(int i=5; i<19; i++){
+		insertHeap(i);
+	}
 	printHeap();
 
-	int c;
-	cin>>c;
+	delHeap();
+	printHeap();
+
+	delHeap();
+	printHeap();
+	
+	delHeap();
+	printHeap();
+
+	int k;
+	cin>>k;
+	return 0;
 }
