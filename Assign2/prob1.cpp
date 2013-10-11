@@ -30,7 +30,7 @@ void exchange(int i, int j){
 void insertHeap(int val){
 	//Normal insertion at the end
 	if(ptr != size){
-		heap[ptr] = val;
+		heap[ptr] = val+keyDiff;
 		ptr++;
 	}
 
@@ -56,43 +56,14 @@ void printHeap(){
 
 	int j = 1; //Line number
 	for(int i=1; i<ptr; i++){
-		//For element spacing
-		switch(j){
-			case 1:
-				cout<<"            ";
-				break;
-			case 2:
-				cout<<"        ";
-				break;
-			case 3:
-				cout<<"    ";
-				break;
-			case 4:
-				cout<<"  ";
-				break;
-
-		}
-
 		//Print element
-		cout<<heap[i]-keyDiff;
+		cout<<heap[i]-keyDiff<<" ";
 
 		//For a line break
 		int k = (int) pow(2.0,j);
 		if((i+1)%k == 0){
-			//For element spacing
-			switch(j){
-				case 1:
-					cout<<endl<<" ";
-					break;
-				case 2:
-					cout<<endl<<"  ";
-					break;
-				case 3:
-					cout<<endl<<"   ";
-					break;
-			}
-			j++;
-			
+			cout<<endl;
+			j++;			
 		}
 	}
 	cout<<endl<<endl;
@@ -180,10 +151,21 @@ int decreaseAllKeys(int val){
 
 int main(){
 	//Initialization with given values
-	for(int i=5; i<20; i++){
+	for(int i=5; i<19; i++){
 		insertHeap(i);
 	}
+	printHeap();
 
+	decreaseAllKeys(2);
+	printHeap();
+
+	insertHeap(19);
+	printHeap();
+
+	insertHeap(18);
+	printHeap();
+
+	decreaseAllKeys(1);
 	printHeap();
 
 	delHeap();
@@ -195,8 +177,6 @@ int main(){
 	delHeap();
 	printHeap();
 
-	decreaseAllKeys(2);
-	printHeap();
 
 	int k;
 	cin>>k;
