@@ -16,6 +16,7 @@ using namespace std;
 
 int heap[size];
 int ptr = 1;//Current location in the array to be filled with new values
+int keyDiff = 0;
 
 /************ Other functions ****************/
 void exchange(int i, int j){
@@ -53,13 +54,45 @@ void insertHeap(int val){
 void printHeap(){
 	cout<<"Level order traversal of current heap is: "<<endl;
 
-	int j = 1;
+	int j = 1; //Line number
 	for(int i=1; i<ptr; i++){
-		cout<<heap[i]<<" ";
+		//For element spacing
+		switch(j){
+			case 1:
+				cout<<"            ";
+				break;
+			case 2:
+				cout<<"        ";
+				break;
+			case 3:
+				cout<<"    ";
+				break;
+			case 4:
+				cout<<"  ";
+				break;
+
+		}
+
+		//Print element
+		cout<<heap[i]-keyDiff;
+
+		//For a line break
 		int k = (int) pow(2.0,j);
 		if((i+1)%k == 0){
-			cout<<endl;
+			//For element spacing
+			switch(j){
+				case 1:
+					cout<<endl<<" ";
+					break;
+				case 2:
+					cout<<endl<<"  ";
+					break;
+				case 3:
+					cout<<endl<<"   ";
+					break;
+			}
 			j++;
+			
 		}
 	}
 	cout<<endl<<endl;
@@ -140,12 +173,17 @@ void delHeap(){
 }
 
 
+int decreaseAllKeys(int val){
+	keyDiff = keyDiff+val;
+}
+
 
 int main(){
 	//Initialization with given values
-	for(int i=5; i<19; i++){
+	for(int i=5; i<20; i++){
 		insertHeap(i);
 	}
+
 	printHeap();
 
 	delHeap();
@@ -155,6 +193,9 @@ int main(){
 	printHeap();
 	
 	delHeap();
+	printHeap();
+
+	decreaseAllKeys(2);
 	printHeap();
 
 	int k;
