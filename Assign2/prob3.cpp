@@ -357,8 +357,7 @@ node * Insert(int key, node *tree, node *treeP){
 
 void insertTree(int key){
 	root = Insert(key, root, NULL);
-	//if(key != 6)
-		splayOp(curSplay);
+	splayOp(curSplay);
 }
 
 void printPreOrder(node *n){
@@ -387,7 +386,7 @@ void printInOrder(node *n){
 
 void printTree(){
 	if (root != NULL){
-		cout<<endl<<endl<<"The current BST is: "<<endl;
+		cout<<endl<<endl<<"The current SplayTree is: "<<endl;
 
 		cout<<"The Pre Order traversal is: "<<endl;
 		printPreOrder(root);
@@ -447,9 +446,9 @@ void printTree(){
  	//and then return the leftMostChild
  	else{
  		//leftMostChild has a right child
- 		if(tree->rChild != NULL){
- 			treeP->lChild = tree->rChild;
- 			tree->rChild->parent = treeP;
+ 		if(treeP->rChild != NULL){
+ 			treeP->parent->lChild = treeP->rChild;
+ 			treeP->rChild->parent = treeP->parent;
  		}
 
  		//Delete the reference from its parent to this node as we are going to take this away
@@ -457,13 +456,13 @@ void printTree(){
  		//be its parents right node. So, we can't assume that tree->parent->lChild = NULL would do the thing
  		else{
  			//Normal case
- 			if(tree->parent->lChild == tree)
- 				tree->parent->lChild = NULL;
+ 			if(treeP->parent->lChild == treeP)
+ 				treeP->parent->lChild = NULL;
  			//Special case - root being deleted with rChild has no childs case
  			else
- 				tree->parent->rChild = NULL;
+ 				treeP->parent->rChild = NULL;
  		}
- 		leftMostChild = tree;
+ 		leftMostChild = treeP;
  	}
 
  	return leftMostChild;
@@ -474,25 +473,30 @@ void printTree(){
 
  	if(tree != NULL){
  		if(key < tree->key){
- 			deleteNode(key, tree->lChild, tree);
- 			cout<<"left"<<key<<" "<<tree->key<<endl;
+ 			result = deleteNode(key, tree->lChild, tree);
  		}
  		else if(key > tree->key){
- 			deleteNode(key, tree->rChild, tree);
- 			cout<<"right"<<key<<" "<<tree->key<<endl;
+ 			result = deleteNode(key, tree->rChild, tree);
 		}
  		//This is the delete node
  		else{
  			//Case 1: Delete node has no childs
  			if(tree->lChild == NULL && tree->rChild == NULL){
- 				if(treeP->lChild == tree){
- 					tree->lChild = NULL;
- 					splayOp(treeP);
- 				}
- 				else if(treeP->rChild == tree){
- 					tree->rChild = NULL;
- 					splayOp(treeP);
- 				}
+
+ 				//Ensure that the node itself is not root. In which case the tree will be empty
+ 				//Normal case
+ 				if(treeP != NULL){
+	 				if(treeP->lChild == tree){
+	 					treeP->lChild = NULL;
+	 				}
+	 				else if(treeP->rChild == tree){
+	 					treeP->rChild = NULL;
+	 				}
+	 			}
+	 			//Deleting root with no childs
+	 			else{
+	 				root = NULL;
+	 			}
  			}
 
  			//Case 2: Delete node has two child
@@ -534,7 +538,7 @@ void printTree(){
 					}
 				}
 
-				//If deleting node's parent is NUll => Deleting node is root and also it has 
+				//If deleting node's parent is NUll => Deleting node is root and also it has two childs 
 				else{
 					root = replacingNode;
 					root->parent = NULL;
@@ -610,12 +614,14 @@ void printTree(){
 	 				else{
 	 					root = tree->rChild;
 	 					root->parent = NULL;
+	 					tree->rChild->parent = tree;
 	 				}
  				}
  			}
  			
  			result = 1;
- 			splayOp(treeP);
+ 			if(treeP != NULL)
+ 				splayOp(treeP);
  		}
  	}else{
  		result = 0;
@@ -635,38 +641,62 @@ void printTree(){
 
  }
 
+ void init1to15(){
+ 	root = Insert(8, root, NULL);
+ 	root = Insert(4, root, NULL);
+ 	root = Insert(12, root, NULL);
+ 	root = Insert(2, root, NULL);
+ 	root = Insert(6, root, NULL);
+ 	root = Insert(10, root, NULL);
+ 	root = Insert(14, root, NULL);
+ 	root = Insert(1, root, NULL);
+ 	root = Insert(3, root, NULL);
+ 	root = Insert(5, root, NULL);
+ 	root = Insert(7, root, NULL);
+ 	root = Insert(9, root, NULL);
+ 	root = Insert(11, root, NULL);
+ 	root = Insert(13, root, NULL);
+ 	root = Insert(15, root, NULL);
+ }
+
 
  /******************************** Main program ********************************/
 
 int main(){
-    //First insert needs root
-	insertTree(9);
-	insertTree(5);
-	insertTree(4);
-	insertTree(6);
-	insertTree(8);
-	insertTree(15);
-	insertTree(13);
-	insertTree(11);
-	insertTree(12);
-	insertTree(18);
-	insertTree(17);
-	insertTree(19);
-	
+
+	cout<<endl<<"Intialising tree with as a 15 node full try with keys 1-15"<<endl;
+    init1to15();
 	printTree();
 
-	searchTree(13);
+	//Searching from 15-1
+	cout<<endl<<endl<<"Performing search operations"<<endl;
+	for (int i = 15; i > 0; i--){
+		cout<<endl<<endl<<"Searching for key: "<<i<<endl;
+		searchTree(i);
+		printTree();
+	}
+	cout<<endl<<"Search operation complete"<<endl;
+
+	cout<<endl<<endl<<"Performing delete operations"<<endl;
+	cout<<"Deleting 15.."<<endl;
+	deleteTree(15);
 	printTree();
 
-	deleteTree(13);
+	cout<<endl<<endl<<"Deleting 14..";
+	deleteTree(14);
 	printTree();
 
+	cout<<endl<<endl<<"Deleting 4..";
+	deleteTree(4);
+	printTree();
 
-	/*insertTree(13);
-	insertTree(12);
-	insertTree(15);
-	insertTree(16);*/
+	cout<<endl<<endl<<"Deleting 5..";	
+	deleteTree(5);
+	printTree();
 
+	cout<<endl<<endl<<"Deleting 1..";
+	deleteTree(1);
+	printTree();
 
 
 	int c;
