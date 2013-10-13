@@ -498,7 +498,6 @@ void printTree(){
 	 				root = NULL;
 	 			}
  			}
-
  			//Case 2: Delete node has two child
  			else if(tree->lChild != NULL && tree->rChild != NULL){
  				node *replacingNode = getLeftMostChild(tree->rChild, tree);
@@ -633,7 +632,6 @@ void printTree(){
 
  void deleteTree(int key){
  	bool result = deleteNode(key, root, NULL);
-
  	if(result)
  		cout<<endl<<"Found and deleted !"<<endl;
  	else
@@ -663,7 +661,6 @@ void printTree(){
  /******************************** Main program ********************************/
 
 int main(){
-
 	cout<<endl<<"Intialising tree with as a 15 node full try with keys 1-15"<<endl;
     init1to15();
 	printTree();
@@ -698,7 +695,6 @@ int main(){
 	deleteTree(1);
 	printTree();
 
-
-	int c;
-	cin>>c;
+	char waitForUserAction;
+	cin>>waitForUserAction;
 }
