@@ -662,7 +662,7 @@ void printTree(){
 
 int main(){
 	cout<<endl<<"Intialising tree with as a 15 node full try with keys 1-15"<<endl;
-    init1to15();
+	init1to15();
 	printTree();
 
 	//Searching from 15-1
