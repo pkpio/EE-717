@@ -433,55 +433,205 @@ void printTree(){
  		cout<<endl<<"Not found !"<<endl;
  }
 
- bool delete(int key, node *tree, node *treeP){
+ node * getLeftMostChild(node *tree, node *treeP){
+ 	node *leftMostChild = NULL;
+
+ 	//To continue in sub tree
+ 	if(tree != NULL){
+ 		leftMostChild = getLeftMostChild(tree->lChild, tree);
+ 	}
+ 	//Reached the left most tree
+ 	//In this case we need to do some house keeping :P
+ 	//If the leftMostChild has a right child then,
+ 	//Assign it as left child to the leftMostChilds parent
+ 	//and then return the leftMostChild
+ 	else{
+ 		//leftMostChild has a right child
+ 		if(tree->rChild != NULL){
+ 			treeP->lChild = tree->rChild;
+ 			tree->rChild->parent = treeP;
+ 		}
+
+ 		//Delete the reference from its parent to this node as we are going to take this away
+ 		//NOTE: If the deleting node is root and its rChild has no children then the leftMostNode will
+ 		//be its parents right node. So, we can't assume that tree->parent->lChild = NULL would do the thing
+ 		else{
+ 			//Normal case
+ 			if(tree->parent->lChild == tree)
+ 				tree->parent->lChild = NULL;
+ 			//Special case - root being deleted with rChild has no childs case
+ 			else
+ 				tree->parent->rChild = NULL;
+ 		}
+ 		leftMostChild = tree;
+ 	}
+
+ 	return leftMostChild;
+ }
+
+ bool deleteNode(int key, node *tree, node *treeP){
  	bool result = 0;
 
  	if(tree != NULL){
- 		if(key < tree->key)
- 			delete(key, tree->lChild, tree);
- 		else if(key > tree->key)
- 			delete(key, tree->rChild, tree);
+ 		if(key < tree->key){
+ 			deleteNode(key, tree->lChild, tree);
+ 			cout<<"left"<<key<<" "<<tree->key<<endl;
+ 		}
+ 		else if(key > tree->key){
+ 			deleteNode(key, tree->rChild, tree);
+ 			cout<<"right"<<key<<" "<<tree->key<<endl;
+		}
+ 		//This is the delete node
  		else{
  			//Case 1: Delete node has no childs
- 			if(tree->lChild == NULL && tree->lChild == NULL){
+ 			if(tree->lChild == NULL && tree->rChild == NULL){
  				if(treeP->lChild == tree){
  					tree->lChild = NULL;
  					splayOp(treeP);
- 					result = 1;
  				}
  				else if(treeP->rChild == tree){
  					tree->rChild = NULL;
  					splayOp(treeP);
- 					result = 1;
  				}
  			}
 
  			//Case 2: Delete node has two child
  			else if(tree->lChild != NULL && tree->rChild != NULL){
+ 				node *replacingNode = getLeftMostChild(tree->rChild, tree);
 
+ 				//We now have the replacing node with all necessary house keeping done.
+ 				//All we need to do is just put it in place of the deleting node
+
+ 				//Ensure the parent of deleting node (tree) is not NULL. i.e., tree is not root.
+				if(treeP != NULL){
+
+					//Deleting node is its parents lChild
+					if(treeP->lChild == tree){
+						treeP->lChild = replacingNode;
+						replacingNode->parent = treeP;
+					}
+
+					//Deleting node is its parents rChild
+					else if(treeP->rChild == tree){
+						treeP->rChild = replacingNode;
+						replacingNode->parent = treeP;
+					}
+
+					replacingNode->lChild = tree->lChild;
+					tree->lChild->parent = replacingNode;
+
+					//tree->rChild is tricky because rChild could be the replacing node
+					//In which case the present rChild of tree will be set to NULL by getMostLeftChild() call
+
+					//Normal case
+					if(tree->rChild != NULL){
+						replacingNode->rChild = tree->rChild;
+						tree->rChild->parent = replacingNode;
+					}
+					//The special discussed above
+					else{
+						replacingNode->rChild = NULL;
+					}
+				}
+
+				//If deleting node's parent is NUll => Deleting node is root and also it has 
+				else{
+					root = replacingNode;
+					root->parent = NULL;
+
+					//Updating lChild and lChilds parent as new root
+					root->lChild = tree->lChild;
+					tree->lChild->parent = root;
+
+
+					//root->rChild is tricky because rChild could be the replacing node
+					//In which case the present rChild of root will be set to NULL by getMostLeftChild() call
+					//Normal case
+					if(tree->rChild != NULL){
+						root->rChild = tree->rChild;
+						//Updating parent reference from rChild to new root
+						tree->rChild->parent = root;
+					}
+					//The special discussed above
+					else{
+						root->rChild = NULL;
+					}
+					
+				}
  			}
 
  			//Case 3: Delete node has only one child
  			else{
  				//Case 31: That one child is lChild
  				if(tree->lChild != NULL){
- 					if(treeP->parent != NULL){
-	 					treeP->lChild = tree
+
+ 					//Ensure the parent of deleting node (tree) is not NULL. i.e., tree is not root.
+ 					if(treeP != NULL){
+
+ 						//Deleting node is its parents lChild
+	 					if(treeP->lChild == tree){
+	 						treeP->lChild = tree->lChild;
+	 						tree->lChild->parent = treeP;
+	 					}
+
+	 					//Deleting node is its parents rChild
+	 					else if(treeP->rChild == tree){
+	 						treeP->rChild = tree->lChild;
+	 						tree->lChild->parent = treeP;
+	 					}
+	 				}
+
+	 				//If deleting node's parent is NUll => Deleting node is root and also it has 
+	 				else{
+	 					root = tree->lChild;
+	 					root->parent = NULL;
 	 				}
  				}
  				//Case 32: That one child is rChild
  				else if(tree->rChild != NULL){
 
+ 					//Ensure the parent of deleting node (tree) is not NULL. i.e., tree is not root.
+ 					if(treeP != NULL){
+
+ 						//Deleting node is its parents lChild
+	 					if(treeP->lChild == tree){
+	 						treeP->lChild = tree->rChild;
+	 						tree->rChild->parent = treeP;
+	 					}
+
+	 					//Deleting node is its parents rChild
+	 					else if(treeP->rChild == tree){
+	 						treeP->rChild = tree->rChild;
+	 						tree->rChild->parent = treeP;
+	 					}
+	 				}
+
+	 				//If deleting node's parent is NUll => Deleting node is root and also it has 
+	 				else{
+	 					root = tree->rChild;
+	 					root->parent = NULL;
+	 				}
  				}
  			}
+ 			
+ 			result = 1;
+ 			splayOp(treeP);
  		}
  	}else{
  		result = 0;
  		splayOp(treeP);
  	}
+
+ 	return result;
  }
 
  void deleteTree(int key){
+ 	bool result = deleteNode(key, root, NULL);
+
+ 	if(result)
+ 		cout<<endl<<"Found and deleted !"<<endl;
+ 	else
+ 		cout<<endl<<"Not found to delete !"<<endl;
 
  }
 
@@ -506,6 +656,9 @@ int main(){
 	printTree();
 
 	searchTree(13);
+	printTree();
+
+	deleteTree(13);
 	printTree();
 
 
