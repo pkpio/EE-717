@@ -74,6 +74,12 @@ void twoStepSplayOp(node *splayNode){
 			splayNode->rChild = splayP;
 			splayP->lChild = temp;
 
+			//Set parents for new children
+			if(splayGP->lChild != NULL)
+				splayGP->lChild->parent = splayGP;
+			if(splayP->lChild != NULL)
+				splayP->lChild->parent = splayP;
+
 		}
 		
 
@@ -118,6 +124,12 @@ void twoStepSplayOp(node *splayNode){
 			splayNode->lChild = splayP;
 			splayNode->rChild = splayGP;
 			splayGP->lChild = temp;
+
+			//Set parents for new children
+			if(splayGP->lChild != NULL)
+				splayGP->lChild->parent = splayGP;
+			if(splayP->rChild != NULL)
+				splayP->rChild->parent = splayP;
 		}
 	}
 
@@ -171,6 +183,12 @@ void twoStepSplayOp(node *splayNode){
 			temp = splayNode->lChild;
 			splayNode->lChild = splayP;
 			splayP->rChild = temp;
+
+			//Set parents for new children
+			if(splayGP->rChild != NULL)
+				splayGP->rChild->parent = splayGP;
+			if(splayP->rChild != NULL)
+				splayP->rChild->parent = splayP;
 		}
 
 		
@@ -215,6 +233,13 @@ void twoStepSplayOp(node *splayNode){
 			splayNode->rChild = splayP;
 			splayNode->lChild = splayGP;
 			splayGP->rChild = temp;
+
+			//Set parents for new children
+			if(splayGP->rChild != NULL)
+				splayGP->rChild->parent = splayGP;
+			if(splayP->lChild != NULL)
+				splayP->lChild->parent = splayP;
+
 		}
 	}
 }
@@ -240,6 +265,10 @@ void oneStepSplayOp(node *splayNode){
 		splayNode->rChild = splayP;
 		splayP->lChild = temp;
 
+		//Setting other parents
+		if(temp != NULL)
+			temp->parent = splayP;
+
 		root = splayNode;
 	}
 
@@ -260,6 +289,10 @@ void oneStepSplayOp(node *splayNode){
 		node *temp = splayNode->lChild;
 		splayNode->lChild = splayP;
 		splayP->rChild = temp;
+
+		//Setting other parents
+		if(temp != NULL)
+			temp->parent = splayP;
 
 		root = splayNode;
      }
@@ -324,7 +357,8 @@ node * Insert(int key, node *tree, node *treeP){
 
 void insertTree(int key){
 	root = Insert(key, root, NULL);
-	splayOp(curSplay);
+	//if(key != 6)
+		splayOp(curSplay);
 }
 
 void printPreOrder(node *n){
@@ -368,33 +402,87 @@ void printTree(){
 	}
  }
 
- bool search(int key, node *tree){
+ bool search(int key, node *tree, node *treeP){
  	bool result = 0;
 
  	if(tree != NULL){
 	 	if(key < tree->key)
-	 		result = search(key, tree->lChild);
+	 		result = search(key, tree->lChild, tree);
 	 	else if(key > tree->key)
-	 		result = search(key, tree->rChild);
-	 	else
+	 		result = search(key, tree->rChild, tree);
+	 	else{
 	 		result = 1;
+	 		curSplay = tree;
+	 	}
 
-	 	curSplay = tree;
 	 } else{
 	 	result = 0;
+	 	curSplay = treeP;
 	 }
 
  	return result;
  }
 
  void searchTree(int key){
- 	bool result = search(key, root);
+ 	bool result = search(key, root, NULL);
  	splayOp(curSplay);
 
  	if(result)
  		cout<<endl<<"Found !"<<endl;
  	else
  		cout<<endl<<"Not found !"<<endl;
+ }
+
+ bool delete(int key, node *tree, node *treeP){
+ 	bool result = 0;
+
+ 	if(tree != NULL){
+ 		if(key < tree->key)
+ 			delete(key, tree->lChild, tree);
+ 		else if(key > tree->key)
+ 			delete(key, tree->rChild, tree);
+ 		else{
+ 			//Case 1: Delete node has no childs
+ 			if(tree->lChild == NULL && tree->lChild == NULL){
+ 				if(treeP->lChild == tree){
+ 					tree->lChild = NULL;
+ 					splayOp(treeP);
+ 					result = 1;
+ 				}
+ 				else if(treeP->rChild == tree){
+ 					tree->rChild = NULL;
+ 					splayOp(treeP);
+ 					result = 1;
+ 				}
+ 			}
+
+ 			//Case 2: Delete node has two child
+ 			else if(tree->lChild != NULL && tree->rChild != NULL){
+
+ 			}
+
+ 			//Case 3: Delete node has only one child
+ 			else{
+ 				//Case 31: That one child is lChild
+ 				if(tree->lChild != NULL){
+ 					if(treeP->parent != NULL){
+	 					treeP->lChild = tree
+	 				}
+ 				}
+ 				//Case 32: That one child is rChild
+ 				else if(tree->rChild != NULL){
+
+ 				}
+ 			}
+ 		}
+ 	}else{
+ 		result = 0;
+ 		splayOp(treeP);
+ 	}
+ }
+
+ void deleteTree(int key){
+
  }
 
 
@@ -406,23 +494,18 @@ int main(){
 	insertTree(5);
 	insertTree(4);
 	insertTree(6);
-	/*cout<<"Here4";
 	insertTree(8);
-	cout<<"Here5";
 	insertTree(15);
-	cout<<"Here6";
 	insertTree(13);
-	cout<<"Here7";
 	insertTree(11);
-	cout<<"Here9";
 	insertTree(12);
-	cout<<"Here99";
 	insertTree(18);
-	//insertTree(17);
-	*///insertTree(19);*/
+	insertTree(17);
+	insertTree(19);
+	
 	printTree();
 
-	//searchTree(13);
+	searchTree(13);
 	printTree();
 
 
