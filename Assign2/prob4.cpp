@@ -6,6 +6,8 @@
 #include <cmath>
 using namespace std;
 
+#define delSize 5 //# of deletions after which garbage collection takes place
+
 //Define a node which supports binary tree
 struct node{
 	int key;
@@ -17,6 +19,8 @@ struct node{
 
 //AVLTree variables
 node *root = NULL;
+int delCount = 0;
+int deletedNodes[delSize];
 
 void printPreOrder(node *n){
 	if(n != NULL){
@@ -44,7 +48,7 @@ void printInOrder(node *n){
 
 void printTree(){
 	if (root != NULL){
-		cout<<endl<<endl<<"The current SplayTree is: "<<endl;
+		cout<<endl<<endl<<"The current AVLTree is: "<<endl;
 
 		cout<<"The Pre Order traversal is: "<<endl;
 		printPreOrder(root);
@@ -100,24 +104,45 @@ int balanceFactor(node *tree){
 	return(lHeight - rHeight);
 }
 
-node * rotatLeft(node *tree){
-	node *temp;
-	temp = tree->rChild;
-	tree->rChild = temp->lChild;
-	temp->lChild = tree;
-	tree->height = height(tree);
-	temp->height = height(temp);
-	return(temp);
+/*
+           K3
+          /  \                          K2
+         A   k2                        /  \
+            /  \          ==>         K3   K1
+           B   k1                    /  \  / \
+              /  \                  A   B C   D
+             C    D 
+
+
+*/
+node * rotatLeft(node *k3){
+	node *k2 = k3->rChild;
+	k3->rChild = k2->lChild;
+	k2->lChild = k3;
+	k3->height = height(k3);
+	k2->height = height(k2);
+	return(k2);
 }
 
-node * rotatRight(node *tree){
-	node *temp;
-	temp = tree->lChild;
-	tree->lChild = temp->rChild;
-	temp->rChild = tree;
-	tree->height = height(tree);
-	temp->height = height(temp);
-	return(temp);
+/*
+           K3
+          /  \                          K2
+         k2   D                        /  \
+        /  \              ==>         K1   K3
+       k1   C                        /  \  / \
+      /  \                          A   B C  D
+     A    B 
+
+
+*/
+node * rotatRight(node *k3){
+	node *k2;
+	k2 = k3->lChild;
+	k3->lChild = k2->rChild;
+	k2->rChild = k3;
+	k3->height = height(k3);
+	k2->height = height(k2);
+	return(k2);
 }
 
 node * LL(node *tree){
@@ -174,7 +199,7 @@ node * Insert(int key, node *tree){
 		if(balanceFactor(tree) == -2){
 
 			//Case Right Right - no zigzag
-			if(key < tree->rChild->key)
+			if(key > tree->rChild->key)
 				tree = RR(tree);
 			//Case Right Left - zigzag
 			else
@@ -222,6 +247,67 @@ bool search(int key, node *tree){
  		cout<<endl<<"Not found !"<<endl;
  }
 
+ node * norDelete(node *tree, int key){
+ 	if(tree != NULL){
+ 		if(key < tree->key){
+ 			tree->lChild = norDelete(tree->lChild, key);
+
+ 			//AVL balancing
+ 			if(balanceFactor(tree) == -2){
+ 				if(balanceFactor(tree->rChild) <= 0)
+ 					tree = RR(tree);
+ 				else
+ 					tree = RL(tree);
+ 			}
+
+ 		} else if(key > tree->key){
+ 			tree->rChild = norDelete(tree->rChild, key);
+
+ 			//AVL balancing
+ 			if(balanceFactor(tree) == 2){
+ 				if(balanceFactor(tree->lChild) >= 0)
+ 					tree = LL(tree);
+ 				else
+ 					tree = LR(tree);
+ 			}
+
+ 		} else{
+ 			if(tree->rChild != NULL){
+ 				node *temp = tree->rChild;
+ 				while(temp->lChild != NULL)
+ 					temp = temp->lChild;
+ 				tree->key = temp->key;
+ 				tree->rChild = norDelete(tree->rChild, temp->key);
+
+ 				//AVL balancing
+ 				if(balanceFactor(tree) == 2){
+ 					if(balanceFactor(tree->lChild) >= 0)
+ 						tree = LL(tree);
+ 					else
+ 						tree = LR(tree);
+ 				}
+
+ 			} else{
+ 				return(tree->lChild);
+ 			}
+ 		}
+ 	}else{
+ 		return(NULL);
+ 	}
+
+ 	tree->height = height(tree);
+ 	return(tree);
+
+ }
+
+ void delDeleted(node *tree){
+ 	for(int i=0; i<=delCount; i++){
+ 		norDelete(root, deletedNodes[i]);
+ 		deletedNodes[i] = 0; //Not required. Just for my clarity
+ 	}
+ 	delCount = 0;
+ }
+
 bool lazyDelete(int key, node *tree){
  	bool result = 0;
 
@@ -236,6 +322,8 @@ bool lazyDelete(int key, node *tree){
  		else{
  			tree->isDeleted = true;
  			result = 1;
+ 			deletedNodes[delCount] = key;
+ 			delCount++;
  		}
  	}
 
@@ -248,17 +336,79 @@ void deleteTree(int key){
  		cout<<endl<<"Found and deleted !"<<endl;
  	else
  		cout<<endl<<"Not found to delete !"<<endl;
+
+	//Garbage collection
+	if(delCount == 5){
+		delDeleted(root);
+		cout<<"Garbage collected !"<<endl;
+	}
 }
 
 
 /************************	Main program	****************************/
 int main(){
-	insertTree(1);
-	insertTree(2);
-	insertTree(3);
-	insertTree(5);
-	insertTree(6);
+	//Initialization - with numbers from 1-20
+	cout<<"Initializing tree with numbers 1-20";
+	for(int i=20; i>=1; i--){
+		insertTree(i);
+		cout<<endl<<"Inserted key: "<<i<<endl;
+	}
+	cout<<endl<<"Initialization complete !"<<endl;
+	printTree();
 
+	//Deleting operations on 3, 4, 8, 9
+	cout<<endl<<endl<<"Performing delete operations"<<endl;
+	cout<<endl<<"Deleting 3..."<<endl;
+	deleteTree(3);
+	cout<<endl<<"Deleting 4..."<<endl;
+	deleteTree(4);
+	cout<<endl<<"Deleting 8..."<<endl;
+	deleteTree(8);
+	cout<<endl<<"Deleting 9..."<<endl;
+	deleteTree(9);
+	printTree();
+
+	//Insering values 21, 22, 8
+	insertTree(21);
+	cout<<endl<<endl<<"Inserted key: 21"<<endl;
+	insertTree(22);
+	cout<<endl<<"Inserted key: 22"<<endl;
+	insertTree(8);
+	cout<<endl<<"Inserted key: 8"<<endl;
+	printTree();
+
+	//Deleting operation on 10, 12, 14
+	cout<<endl<<endl<<"Performing delete operations"<<endl;
+	cout<<endl<<"Deleting 10..."<<endl;
+	deleteTree(10);
+	cout<<endl<<"Deleting 12..."<<endl;
+	deleteTree(12);
+	cout<<endl<<"Deleting 14..."<<endl;
+	deleteTree(14);
+	printTree();
+
+	//Inserting values 23, 24
+	insertTree(23);
+	cout<<endl<<endl<<"Inserted key: 23"<<endl;
+	insertTree(24);
+	cout<<endl<<"Inserted key: 24"<<endl;
+	printTree();
+
+	//Deleting operation on 24, 8, 23
+	cout<<endl<<endl<<"Performing delete operations"<<endl;
+	cout<<endl<<"Deleting 24..."<<endl;
+	deleteTree(24);
+	cout<<endl<<"Deleting 8..."<<endl;
+	deleteTree(8);
+	cout<<endl<<"Deleting 23..."<<endl;
+	deleteTree(23);
+	printTree();
+
+	//Inserting values 24, 25
+	insertTree(24);
+	cout<<endl<<endl<<"Inserted key: 24"<<endl;
+	insertTree(25);
+	cout<<endl<<"Inserted key: 25"<<endl;
 	printTree();
 	
 	char waitForUserAction;

@@ -16,7 +16,7 @@ struct node{
 	node *rChild;
 };
 
-//Heap variables
+//SplayTree variables
 node *root = NULL;
 node *curSplay = NULL;
 
