@@ -1,4 +1,11 @@
-/*********************************************************
+/*****************************************************************************************************************************
+Author:		Praveen Kumar Pendyala
+Created:	10th Oct.,2013
+github:		https://github.com/praveendath92/EE-717/
+
+NOTE:
+The below code is written by aforementioned author independently and any reseblence to other code(s) is pure coincidence or 
+the code might have been referred to this. The below code, as developed through various fixes, can be found on github.
 Heap used for this problem is a max Heap
 Heap implemented using a circular array
 
@@ -6,7 +13,7 @@ Index starts from 1.
 For element i,
 parent_index = i/2
 lChild = i*2 	rChild = i*2 + 1
-**********************************************************/
+*****************************************************************************************************************************/
 
 #include <iostream>
 #include <cmath>
